@@ -1,84 +1,68 @@
 import React, { Component } from 'react';
-import { Input, Button, List } from 'antd';
 import store from './store/';
-import { CHANGE_INPUT_VALUE, ADD_TODO_ITEM, DELETE_TODO_ITEM} from './store/actionType'
+import { getInputChangeAction, getAddItemAction, GetDeleteItemAction, initListAction } from './store/actionCreators';
+import TodoListUI from './TodoListUI';
+import axios from 'axios';
 
 class App extends Component {
 	
 	constructor(props) {
 	    super(props);
-		this.state = store.getState()
-		this.handleInputChange = this.handleInputChange.bind(this)
-		this.handleStoreChange = this.handleStoreChange.bind(this)
-		this.handleBtnClick = this.handleBtnClick.bind(this)
+		this.handleInputChange = this.handleInputChange.bind(this);
 		this.handleKeyUp = this.handleKeyUp.bind(this);
-		store.subscribe(this.handleStoreChange)
+		this.handleBtnClick = this.handleBtnClick.bind(this);
+		this.handleDeleteItem = this.handleDeleteItem.bind(this);
+		this.handleStoreChange = this.handleStoreChange.bind(this);
+		this.state = store.getState();
+		store.subscribe(this.handleStoreChange);
 	}
 	
 	render(){
 		return (
-			<div style={{margin: 10}}>
-				<div>
-					<Input
-						value={ this.state.inputValue } 
-						placeholder="todo info" 
-						style={{width: 300, marginRight: 10}}
-						onChange={this.handleInputChange}
-						onKeyUp={this.handleKeyUp}
-					/>
-					<Button onClick={this.handleBtnClick} type="primary">提交</Button>
-				</div>
-				<List
-					style={{width: 300, marginTop: 10}}
-					bordered
-					dataSource={this.state.list}
-					renderItem={ (item, index) => (
-					<List.Item onClick={this.handleDeleteItem.bind(this,index)}>
-						{item}
-					</List.Item>
-				  )}
-				/>
-			</div>
+			<TodoListUI
+				inputValue={this.state.inputValue}
+				list={this.state.list}
+				handleInputChange={this.handleInputChange}
+				handleKeyUp={this.handleKeyUp}
+				handleBtnClick={this.handleBtnClick}
+				handleDeleteItem={this.handleDeleteItem}
+			/>
 		)
 	}
 	
-	handleInputChange(e){
-		const action = {
-			type: CHANGE_INPUT_VALUE,
-			value: e.target.value
-		}
-		store.dispatch(action);
+	componentDidMount(){
+		axios.get("/api/todolist").then((res)=> {
+			const action = initListAction(res.data);
+			store.dispatch(action);
+		})
 	}
 	
 	handleStoreChange(){
-		this.setState(store.getState())
+		this.setState(store.getState());
 	}
 	
-	handleBtnClick(){
-		const action = {
-			type: ADD_TODO_ITEM,
-			
-		};
+	handleInputChange(e){
+		const action = getInputChangeAction(e.target.value);
 		store.dispatch(action)
 	}
 	
 	handleKeyUp(e){
 		if(e.keyCode === 13){
-			const action = {
-				type: ADD_TODO_ITEM,		
-			};
+			const action = getAddItemAction();
 			store.dispatch(action)
 		}
 	}
 	
-	handleDeleteItem(index){
-		const action = {
-			type: DELETE_TODO_ITEM,
-			index
-		}
-		store.dispatch(action);
+	handleBtnClick(){
+		const action = getAddItemAction();
+		store.dispatch(action)
 	}
+	
+	handleDeleteItem(index){
+		const action = GetDeleteItemAction(index);
+		store.dispatch(action)
+	}
+	
 }
-
 
 export default App;
