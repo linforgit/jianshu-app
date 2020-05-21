@@ -1,28 +1,28 @@
-import React, { Component } from 'react';
+import React,{ Component } from 'react';
+import { connect } from 'react-redux';
 import { CSSTransition } from 'react-transition-group';
+import { actionCreators } from './store';
 import {
 	HeaderWrapper,
 	Logo,
 	Nav,
 	NavItem,
+	SearchWrapper,
 	NavSearch,
+	SearchInfo,
+	SearchInfoTitle,
+	SearchInfoSwitch,
+	SearchInfoList,
+	SearchInfoItem,
 	Addition,
 	Button,
-	SearchWrapper
 } from './style';
+
 
 class Header extends Component {
 	
-	constructor(props){
-		super(props);
-		this.state = {
-			focused: false
-		};
-		this.handleInputFocus = this.handleInputFocus.bind(this);
-		this.handleInputBlur = this.handleInputBlur.bind(this);
-	}
-	
 	render(){
+		const { focused, handleInputFocus, handleInputBlur } = this.props;
 		return (
 			<HeaderWrapper>
 				<Logo />
@@ -35,17 +35,18 @@ class Header extends Component {
 					</NavItem>
 					<SearchWrapper>
 						<CSSTransition
-							in={this.state.focused}
+							in={focused}
 							timeout={500}
 							classNames="slide"
 						>
 							<NavSearch
-								className={this.state.focused ? "focused": ""}
-								onFocus={this.handleInputFocus}
-								onBlur={this.handleInputBlur}
+								className={focused ? "focused": ""}
+								onFocus={handleInputFocus}
+								onBlur={handleInputBlur}
 							></NavSearch>
 						</CSSTransition>
-						<i className={this.state.focused ? "focused iconfont": "iconfont"}>&#xe623;</i>
+						<i className={focused ? "focused iconfont zoom": "iconfont zoom"}>&#xe623;</i>
+						{ this.getListArea() }
 					</SearchWrapper>
 				</Nav>
 				<Addition>
@@ -59,16 +60,85 @@ class Header extends Component {
 		)
 	}
 	
-	handleInputFocus(){
-		this.setState({
-			focused: true
-		})
-	}
-	
-	handleInputBlur(){
-		this.setState({
-			focused: false
-		})
+	getListArea() {
+		const { focused, mouseIn, list, page, totalPage, handleMouseEnter, handleMouseLeave, handleChangePage } = this.props;
+		const jsList = list.toJS();//list是immutable对象，转为js对象才可用list[i]这样取数据
+		const pageList = [];
+		if(jsList.length){//这一步是为了防止页面一进来还没开始请求数据，遍历出空内容
+			for(let i = (page - 1) * 10; i < page * 10; i++){
+				console.log(jsList[i]);
+				if(jsList[i]){
+					pageList.push(
+						<SearchInfoItem key={jsList[i]}>{jsList[i]}</SearchInfoItem>
+					)
+				}
+			}
+		}
+		if(focused || mouseIn){
+			return (
+				<SearchInfo
+					onMouseEnter={handleMouseEnter}
+					onMouseLeave={handleMouseLeave}
+				>
+					<SearchInfoTitle>
+						热门搜索
+						<SearchInfoSwitch
+							onClick={()=>{handleChangePage(page, totalPage, this.spinIcon)}}
+						>
+							<i ref={(icon)=>{this.spinIcon = icon}} className="iconfont spin">&#xe851;</i>
+							换一批
+						</SearchInfoSwitch>
+					</SearchInfoTitle>
+					<SearchInfoList>
+						{ pageList }
+					</SearchInfoList>
+				</SearchInfo>
+			)
+		}else{
+			return null;
+		}
 	}
 }
-export default Header;
+
+const mapStateToProps = (state) => {
+	//使用了immutable后state.header的数据其实是immutable的数据了，不能再打.调用
+	//state是js对象，header是immutable对象
+	return {
+		//更优雅的写法
+		focused: state.getIn(["header", "focused"]),
+		// focused: state.get("header").get("focused")
+		mouseIn: state.getIn(["header", "mouseIn"]),
+		list: state.getIn(["header", "list"]),
+		page: state.getIn(["header", "page"]),
+		totalPage: state.getIn(["header", "totalPage"])
+	}
+}
+
+const mapDispatchToProps = (dispatch) => {
+	return {
+		handleInputFocus(){
+			dispatch(actionCreators.getList());
+			dispatch(actionCreators.searchFocus());
+		},
+		handleInputBlur(){
+			dispatch(actionCreators.searchBlur());
+		},
+		handleMouseEnter(){
+			dispatch(actionCreators.mouseEnter());
+		},
+		handleMouseLeave(){
+			dispatch(actionCreators.mouseLeave());
+		},
+		handleChangePage(page, totalPage, spin){
+			spin.style.transform = 'rotate(360deg)';
+			if(page < totalPage){
+				page++;
+			}else{
+				page = 1;
+			}
+			dispatch(actionCreators.changePage(page));
+		}
+	}
+}
+
+export default connect(mapStateToProps,mapDispatchToProps)(Header);
