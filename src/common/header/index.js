@@ -22,7 +22,7 @@ import {
 class Header extends Component {
 	
 	render(){
-		const { focused, handleInputFocus, handleInputBlur } = this.props;
+		const { focused, handleInputFocus, handleInputBlur, list } = this.props;
 		return (
 			<HeaderWrapper>
 				<Logo />
@@ -41,7 +41,7 @@ class Header extends Component {
 						>
 							<NavSearch
 								className={focused ? "focused": ""}
-								onFocus={handleInputFocus}
+								onFocus={ () => handleInputFocus(list)}
 								onBlur={handleInputBlur}
 							></NavSearch>
 						</CSSTransition>
@@ -66,7 +66,6 @@ class Header extends Component {
 		const pageList = [];
 		if(jsList.length){//这一步是为了防止页面一进来还没开始请求数据，遍历出空内容
 			for(let i = (page - 1) * 10; i < page * 10; i++){
-				console.log(jsList[i]);
 				if(jsList[i]){
 					pageList.push(
 						<SearchInfoItem key={jsList[i]}>{jsList[i]}</SearchInfoItem>
@@ -116,8 +115,10 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
 	return {
-		handleInputFocus(){
-			dispatch(actionCreators.getList());
+		handleInputFocus(list){
+			if(list.size === 0){
+				dispatch(actionCreators.getList());
+			}
 			dispatch(actionCreators.searchFocus());
 		},
 		handleInputBlur(){
@@ -130,12 +131,14 @@ const mapDispatchToProps = (dispatch) => {
 			dispatch(actionCreators.mouseLeave());
 		},
 		handleChangePage(page, totalPage, spin){
-			spin.style.transform = 'rotate(360deg)';
-			if(page < totalPage){
-				page++;
-			}else{
-				page = 1;
+			let originAngle = spin.style.transform.replace(/[^0-9]/ig,"");
+			if(originAngle){
+				originAngle = parseInt(originAngle, 10);
+			}else {
+				originAngle = 0;
 			}
+			spin.style.transform = 'rotate('+ (originAngle + 360) +'deg)';
+			page < totalPage?page++:page = 1;
 			dispatch(actionCreators.changePage(page));
 		}
 	}
