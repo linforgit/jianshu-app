@@ -18,8 +18,7 @@ export const HomeLeft = styled.div`
 
 export const HomeRight = styled.div`
 	float: right;
-	margin-left: 15px;
-	margin-top: 30px;
+	width: 280px;
 `;
 
 export const TopicWrapper = styled.div`
@@ -78,4 +77,26 @@ export const ListInfo = styled.div`
 		font-size: 13px;
 		color: #999;
 	}
+`;
+
+export const RecommendWrapper = styled.div`
+	margin: 30px 0;
+	width: 280px; 
+`;
+
+export const RecommendItem = styled.div`
+	width: 280px; 
+	height: 50px;
+	margin-bottom: 5px;
+	background: url(${(props)=>props.imgUrl});
+	background-size: contain;
+`;
+
+export const WriterWrapper = styled.div`
+	width: 278px;
+	border: 1px solid #dcdcdc;
+	border-radius: 3px;
+	height: 300px;
+	line-height: 300px;
+	text-align: center;
 `;
