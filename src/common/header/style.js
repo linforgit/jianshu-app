@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import logoPic from '../../statics/logo.png';
 
 export const HeaderWrapper = styled.div`
+	z-index: 1;
 	position: relative;
 	height: 56px;
 	border-bottom: 1px solid #f0f0f0;
@@ -21,11 +22,10 @@ export const Logo = styled.a.attrs({
 `;
 
 export const Nav = styled.div`
-	width: 960px;
+	max-width: 960px;
 	height: 100%;
 	margin: 0 auto;
-	padding-right: 70px;
-	box-sizing: border-box;
+	padding: 0 210px 0 100px;
 `
 
 export const NavItem = styled.div`

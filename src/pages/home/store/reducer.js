@@ -1,50 +1,38 @@
 import { fromJS } from 'immutable';
+import * as actionTypes from './constants';
 
 const defaultState = fromJS({
-	topicList: [{
-		id: 1,
-		title: "社会热点",
-	},{
-		id: 2,
-		title: "手绘"
-	},{
-		id: 3,
-		title: "军事"
-	}],
-	articleList: [{
-		id: 11,
-		title: "那些没有参加过高考的孩子,现在怎么样了",
-		desc: "今天是高考的第一天,考场上的,都是千禧宝宝,2011年,上映过一部高考题材的纪录片《中国门》,这个名字 起的很形象,因为高考像是中国人...",
-		imgUrl: "http://b-ssl.duitang.com/uploads/item/201706/27/20170627012435_mJLiX.thumb.700_0.jpeg"
-	},{
-		id: 22,
-		title: "那些没有参加过高考的孩子,现在怎么样了",
-		desc: "今天是高考的第一天,考场上的,都是千禧宝宝,2011年,上映过一部高考题材的纪录片《中国门》,这个名字 起的很形象,因为高考像是中国人...",
-		imgUrl: "http://b-ssl.duitang.com/uploads/item/201706/27/20170627012435_mJLiX.thumb.700_0.jpeg"
-	},{
-		id: 32,
-		title: "那些没有参加过高考的孩子,现在怎么样了",
-		desc: "今天是高考的第一天,考场上的,都是千禧宝宝,2011年,上映过一部高考题材的纪录片《中国门》,这个名字 起的很形象,因为高考像是中国人...",
-		imgUrl: "http://b-ssl.duitang.com/uploads/item/201706/27/20170627012435_mJLiX.thumb.700_0.jpeg"
-	}],
-	recommendList: [{
-		id: 1,
-		imgUrl: require("../../../statics/jian1.png")
-	},{
-		id: 2,
-		imgUrl: require("../../../statics/jian2.png")
-	},{
-		id: 3,
-		imgUrl: require("../../../statics/jian3.png")
-	},{
-		id: 4,
-		imgUrl: require("../../../statics/jian4.png")
-	}]
+	topicList: [],
+	articleList: [],
+	recommendList: [],
+	articlePage: 0,
+	showScroll: false
 })
+
+const changeHomeData = (state, action) => {
+	return state.merge({
+		topicList: fromJS(action.topicList),
+		articleList: fromJS(action.articleList),
+		recommendList: fromJS(action.recommendList)
+	})
+}
+
+const addArticleList = (state, action) => {
+	return state.merge({
+		// return state.set("articleList", state.get("articleList").concat(action.list))
+		"articleList": state.get("articleList").concat(action.list),
+		"articlePage": action.nextPage
+	})
+}
 
 export default (state = defaultState, action) => {
 	switch(action.type){
-		
+		case actionTypes.CHANGE_HOME_DADA:
+			return changeHomeData(state, action);
+		case actionTypes.ADD_ARTICLE_LIST:
+			return addArticleList(state, action);
+		case actionTypes.TOGGLE_SCROLL_SHOW:
+			return state.set("showScroll", action.isShow);
 		default:
 			return state;
 	}
